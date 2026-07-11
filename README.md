@@ -44,7 +44,7 @@ Gratitude-Garden/
 1. Clone this repository
 
 ```
-git clone https://github.com/yourusername/Gratitude-Garden.git
+git clone https://github.com/Atchaya101/gratitude-garden
 ```
 
 2. Open `index.html` in your browser.
