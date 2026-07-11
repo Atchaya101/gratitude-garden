@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gratitude Garden</title>
+<link rel="icon" type="image/png" href="assets/plant.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg-deep: #16241C;
+    --bg-deep-2: #1C2E22;
+    --bg-panel: #20342A;
+    --parchment: #F3ECD9;
+    --parchment-dim: #E8DFC6;
+    --ink: #2B2417;
+    --ink-soft: #6B6151;
+    --moss: #7FA36B;
+    --moss-deep: #4F7043;
+    --soil: #3B2A1E;
+    --soil-light: #4A3527;
+    --marigold: #DCA53E;
+    --marigold-dark: #B9822B;
+    --rose: #C4707A;
+    --rose-dark: #A24F58;
+    --lav: #A9AFD1;
+    --lav-dark: #7B81A8;
+    --line: rgba(243,236,217,0.14);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Karla', sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #2A4433 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep-2) 100%);
+    color: var(--parchment);
+    min-height:100vh;
+    padding: 28px 16px 60px;
+  }
+
+  .wrap{max-width: 880px; margin: 0 auto;}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .title-block h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: clamp(28px, 5vw, 40px);
+    margin:0 0 4px;
+    letter-spacing: -0.01em;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .title-block p{
+    margin:0;
+    font-size:14px;
+    color: rgba(243,236,217,0.6);
+    font-style: italic;
+    font-family:'Fraunces', serif;
+  }
+  .butterfly{
+    width:26px;height:26px;
+    animation: flutter 3.2s ease-in-out infinite;
+    transform-origin:center;
+  }
+  @keyframes flutter{
+    0%,100%{ transform: translateY(0) rotate(-3deg); }
+    50%{ transform: translateY(-4px) rotate(3deg); }
+  }
+
+  .streak-badge{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: rgba(243,236,217,0.08);
+    border:1px solid var(--line);
+    padding:10px 16px;
+    border-radius: 999px;
+    font-size:13px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .streak-badge svg{width:16px;height:16px;flex-shrink:0;}
+  .streak-num{
+    font-family:'Fraunces', serif;
+    font-size:16px;
+    color: var(--marigold);
+  }
+
+  /* ---------- Entry card ---------- */
+  .entry-card{
+    background: var(--parchment);
+    color: var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px 20px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    margin-bottom: 30px;
+  }
+  .entry-card .date-label{
+    font-family:'Fraunces', serif;
+    font-size: 15px;
+    font-weight:600;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .entry-card textarea{
+    width:100%;
+    min-height: 92px;
+    resize: vertical;
+    border: 1.5px solid rgba(43,36,23,0.18);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-family:'Karla', sans-serif;
+    font-size: 15px;
+    line-height:1.5;
+    color: var(--ink);
+    background: #FBF8EF;
+    outline:none;
+    transition: border-color 0.15s ease;
+  }
+  .entry-card textarea:focus{ border-color: var(--moss-deep); }
+  .entry-card textarea::placeholder{ color: var(--ink-soft); }
+
+  .entry-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 12px;
+    gap: 10px;
+    flex-wrap:wrap;
+  }
+  .char-count{ font-size:12px; color: var(--ink-soft); }
+
+  .plant-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background: var(--moss-deep);
+    color: var(--parchment);
+    border:none;
+    padding: 11px 20px;
+    border-radius: 999px;
+    font-family:'Karla', sans-serif;
+    font-weight:700;
+    font-size: 14px;
+    cursor:pointer;
+    transition: transform 0.12s ease, background 0.15s ease;
+  }
+  .plant-btn:hover:not(:disabled){ background:#436038; transform: translateY(-1px); }
+  .plant-btn:disabled{ background:#B9B49E; cursor:not-allowed; }
+  .plant-btn svg{ width:15px; height:15px; }
+
+  .toast{
+    font-size:13px;
+    color: var(--moss-deep);
+    font-weight:700;
+    opacity:0;
+    transition: opacity 0.3s ease;
+  }
+  .toast.show{ opacity:1; }
+
+  /* ---------- Garden ---------- */
+  .garden-section h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    margin: 0 0 12px 2px;
+  }
+  .garden-frame{
+    position:relative;
+    border-radius: var(--radius-lg);
+    overflow:hidden;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, #3A5C48 0%, #2C4736 55%, var(--soil) 55%, var(--soil-light) 100%);
+  }
+  .fireflies{ position:absolute; inset:0; pointer-events:none; }
+  .firefly{
+    position:absolute;
+    width:4px;height:4px;
+    border-radius:50%;
+    background: var(--marigold);
+    box-shadow: 0 0 6px 2px rgba(220,165,62,0.7);
+    animation: twinkle 4.5s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:0.15; transform: translateY(0); }
+    50%{ opacity:0.9; transform: translateY(-8px); }
+  }
+
+  .garden-scroll{
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    gap: 6px;
+    padding: 18px 20px 10px;
+    overflow-x:auto;
+    scroll-behavior:smooth;
+    min-height: 190px;
+  }
+  .garden-scroll::-webkit-scrollbar{ height:8px; }
+  .garden-scroll::-webkit-scrollbar-thumb{ background: rgba(243,236,217,0.25); border-radius:8px; }
+
+  .plant-slot{
+    flex-shrink:0;
+    width:56px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:0;
+    position:relative;
+  }
+  .plant-slot svg{ width:56px; height:130px; display:block; }
+  .plant-slot .sway{ transform-origin: 30px 132px; animation: sway 5s ease-in-out infinite; }
+  @keyframes sway{
+    0%,100%{ transform: rotate(-1.4deg); }
+    50%{ transform: rotate(1.4deg); }
+  }
+  .plant-slot .day-label{
+    font-size:10px;
+    color: rgba(243,236,217,0.55);
+    margin-top:2px;
+    opacity:0;
+    transition: opacity 0.15s ease;
+  }
+  .plant-slot:hover .day-label, .plant-slot:focus-visible .day-label{ opacity:1; }
+  .plant-slot.today::before{
+    content:"today";
+    position:absolute;
+    top:-18px;
+    font-size:9px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color: var(--marigold);
+    font-weight:700;
+  }
+  .plant-slot.today svg{ filter: drop-shadow(0 0 8px rgba(220,165,62,0.45)); }
+  .plant-slot.selected svg{ filter: drop-shadow(0 0 8px rgba(243,236,217,0.5)); }
+
+  .empty-garden{
+    width:100%;
+    text-align:center;
+    padding: 40px 20px 30px;
+    color: rgba(243,236,217,0.65);
+    font-size:14px;
+  }
+  .empty-garden svg{ width:34px;height:34px; margin-bottom:10px; opacity:0.7; }
+
+  @keyframes growIn{
+    from{ transform: scaleY(0.2); opacity:0; }
+    to{ transform: scaleY(1); opacity:1; }
+  }
+  .plant-slot.grow-in svg{ transform-origin: bottom center; animation: growIn 0.55s cubic-bezier(.2,.9,.3,1.2); }
+
+  /* ---------- Detail panel ---------- */
+  .detail-panel{
+    margin-top:16px;
+    background: var(--parchment);
+    color: var(--ink);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display:none;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+  .detail-panel.show{ display:block; }
+  .detail-panel .dp-top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+  }
+  .detail-panel h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 8px;
+    font-size:16px;
+  }
+  .detail-panel p{ margin:0; font-size:14.5px; line-height:1.55; white-space:pre-wrap; }
+  .dp-close{
+    background:none; border:none; cursor:pointer; color: var(--ink-soft);
+    font-size:18px; line-height:1; padding:2px;
+  }
+
+  /* ---------- Journal list ---------- */
+  .journal-section{ margin-top: 32px; }
+  .journal-section h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    margin: 0 0 12px 2px;
+  }
+  .search-box{
+    width:100%;
+    padding:12px 16px;
+    margin-bottom:14px;
+    border-radius:12px;
+    border:1px solid rgba(243,236,217,0.18);
+    background:rgba(243,236,217,0.08);
+    color:var(--parchment);
+    font-size:14px;
+    outline:none;
+    transition:0.2s;
+}
+
+.search-box::placeholder{
+    color:rgba(243,236,217,0.55);
+}
+
+.search-box:focus{
+    border-color:var(--moss);
+    background:rgba(243,236,217,0.12);
+}
+  .journal-list{ display:flex; flex-direction:column; gap:8px; }
+  .journal-item{
+    background: rgba(243,236,217,0.06);
+    border:1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    cursor:pointer;
+    display:flex;
+    gap:14px;
+    align-items:baseline;
+    transition: background 0.15s ease;
+    text-align:left;
+  }
+  .journal-item:hover{ background: rgba(243,236,217,0.11); }
+  .journal-item .j-date{
+    font-family:'Fraunces', serif;
+    font-size:13px;
+    color: var(--marigold);
+    flex-shrink:0;
+    width:110px;
+  }
+  .journal-item .j-text{
+    font-size:13.5px;
+    color: rgba(243,236,217,0.85);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .journal-empty{ font-size:13px; color: rgba(243,236,217,0.5); padding: 8px 2px; }
+
+  footer{
+    text-align:center;
+    margin-top: 36px;
+    font-size:12px;
+    color: rgba(243,236,217,0.4);
+  }
+
+  @media (max-width: 520px){
+    .streak-badge{ order:-1; }
+    header{ flex-direction:column; }
+    .journal-item .j-date{ width:82px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .sway, .butterfly, .firefly, .plant-slot.grow-in svg{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <h1>
+        Gratitude Garden
+        <svg class="butterfly" id="butterfly" viewBox="0 0 24 24" style="display:none;">
+          <path d="M12 12 C6 4 2 6 3 11 C4 15 9 14 12 12 Z" fill="#DCA53E" opacity="0.9"/>
+          <path d="M12 12 C18 4 22 6 21 11 C20 15 15 14 12 12 Z" fill="#C4707A" opacity="0.9"/>
+          <path d="M12 12 C8 16 4 18 5 21 C6 23 10 21 12 14 Z" fill="#DCA53E" opacity="0.7"/>
+          <path d="M12 12 C16 16 20 18 19 21 C18 23 14 21 12 14 Z" fill="#C4707A" opacity="0.7"/>
+          <line x1="12" y1="8" x2="12" y2="18" stroke="#2B2417" stroke-width="1"/>
+        </svg>
+      </h1>
+      <p>grow a little thankfulness every day</p>
+    </div>
+    <div class="streak-badge">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 C12 2 6 8 6 14 C6 18 9 21 12 21 C15 21 18 18 18 14 C18 8 12 2 12 2 Z" fill="#7FA36B"/></svg>
+      <span><span class="streak-num" id="streakNum">0</span> day streak</span>
+    </div>
+  </header>
+
+  <div class="entry-card">
+    <div class="date-label" id="dateLabel">Today</div>
+    <textarea id="entryInput" placeholder="What's one thing you're grateful for today?" maxlength="600"></textarea>
+    <div class="entry-footer">
+      <span class="char-count"><span id="charCount">0</span>/600</span>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+
+    <button class="plant-btn" id="exportBtn">
+        📥 Export Journal
+    </button>
+
+    <span class="toast" id="toast">Planted for today</span>
+
+    <button class="plant-btn" id="plantBtn">
+        <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 22V13M12 13C12 13 6 13 6 7C6 7 12 7 12 13ZM12 13C12 13 18 13 18 7C18 7 12 7 12 13Z"
+            stroke="#F3ECD9"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+        </svg>
+
+        <span id="plantBtnLabel">
+            Plant today's seed
+        </span>
+    </button>
+
+</div>
+        <span class="toast" id="toast">Planted for today</span>
+        <button class="plant-btn" id="plantBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 22V13M12 13C12 13 6 13 6 7C6 7 12 7 12 13ZM12 13C12 13 18 13 18 7C18 7 12 7 12 13Z" stroke="#F3ECD9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="plantBtnLabel">Plant today's seed</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="garden-section">
+    <h2>Your garden</h2>
+    <div class="garden-frame">
+      <div class="fireflies" id="fireflies"></div>
+      <div class="garden-scroll" id="gardenScroll"></div>
+    </div>
+    <div class="detail-panel" id="detailPanel">
+      <div class="dp-top">
+        <h3 id="dpDate"></h3>
+        <button class="dp-close" id="dpClose" aria-label="Close">&times;</button>
+      </div>
+      <p id="dpText"></p>
+    </div>
+  </section>
+
+ <section class="journal-section">
+    <h2>Past entries</h2>
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search your journal..."
+        class="search-box"
+    >
+
+    <div class="journal-list" id="journalList"></div>
+</section>
+
+  <footer>Entries are private to you, stored only for this journal.</footer>
+</div>
+
+<script>
+(function(){
+  const COLORS = [
+    { light: '#DCA53E', dark: '#B9822B' }, // marigold
+    { light: '#C4707A', dark: '#A24F58' }, // rose
+    { light: '#A9AFD1', dark: '#7B81A8' }  // lavender
+  ];
+
+  let entries = {}; // { 'YYYY-MM-DD': { text, createdAt } }
+  let selectedDate = null;
+
+  // ---------- date helpers ----------
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function keyFromDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+  function dateFromKey(key){ const [y,m,d] = key.split('-').map(Number); return new Date(y, m-1, d); }
+  function todayKey(){ return keyFromDate(new Date()); }
+  function formatLong(key){
+    return dateFromKey(key).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  }
+  function formatShort(key){
+    return dateFromKey(key).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  // ---------- deterministic RNG ----------
+  function hashStr(s){
+    let h = 0;
+    for(let i=0;i<s.length;i++){ h = (Math.imul(31,h) + s.charCodeAt(i))|0; }
+    return h;
+  }
+  function mulberry32(seed){
+    let a = seed;
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- plant rendering ----------
+  function leafPath(x, y, side, color){
+    const dx = side * 7.5;
+    return `<path d="M ${x} ${y} Q ${x+dx} ${y-4.5} ${x+dx*1.5} ${y+1.5} Q ${x+dx} ${y+6} ${x} ${y} Z" fill="${color}" opacity="0.92"/>`;
+  }
+
+  function flowerMarkup(type, cx, cy, color, colorDark){
+    if(type === 0){
+      let petals = '';
+      for(let i=0;i<6;i++){
+        const angle = (Math.PI*2/6) * i;
+        const px = cx + Math.cos(angle) * 6;
+        const py = cy + Math.sin(angle) * 6;
+        petals += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.1" fill="${color}" opacity="0.92"/>`;
+      }
+      return `${petals}<circle cx="${cx}" cy="${cy}" r="3.2" fill="${colorDark}"/>`;
+    }
+    if(type === 1){
+      const pts = [];
+      const spikes = 5, outerR = 8, innerR = 3.3;
+      for(let i=0;i<spikes*2;i++){
+        const r = i % 2 === 0 ? outerR : innerR;
+        const a = (Math.PI/spikes)*i - Math.PI/2;
+        pts.push(`${(cx+Math.cos(a)*r).toFixed(1)},${(cy+Math.sin(a)*r).toFixed(1)}`);
+      }
+      return `<polygon points="${pts.join(' ')}" fill="${color}" opacity="0.95"/><circle cx="${cx}" cy="${cy}" r="2.1" fill="${colorDark}"/>`;
+    }
+    return `<path d="M ${cx-6} ${cy+7} C ${cx-6} ${cy-6}, ${cx+6} ${cy-6}, ${cx+6} ${cy+7} C ${cx+4} ${cy+1}, ${cx-4} ${cy+1}, ${cx-6} ${cy+7} Z" fill="${color}" stroke="${colorDark}" stroke-width="0.6"/>`;
+  }
+
+  function buildPlantSVG(dateKey, text){
+    const seed = hashStr(dateKey + '|' + text.length);
+    const rng = mulberry32(seed === 0 ? 1 : seed);
+
+    const len = text.trim().length;
+    const height = 42 + Math.min(len, 280) / 280 * 56 + rng() * 8;
+    const baseX = 30, baseY = 132;
+    const topY = baseY - height;
+    const lean = (rng() - 0.5) * 16;
+    const topX = baseX + lean;
+    const leafCount = 2 + Math.floor(rng() * 3);
+    const colorIdx = Math.floor(rng() * 3);
+    const flowerType = Math.floor(rng() * 3);
+    const c = COLORS[colorIdx];
+
+    let leaves = '';
+    for(let i=0;i<leafCount;i++){
+      const t = 0.32 + (i/leafCount) * 0.48;
+      const y = baseY - height * t;
+      const x = baseX + lean * t;
+      const side = i % 2 === 0 ? 1 : -1;
+      leaves += leafPath(x, y, side, 'var(--moss)');
+    }
+
+    const stem = `<path d="M ${baseX} ${baseY} Q ${baseX + lean*0.5} ${(baseY+topY)/2} ${topX} ${topY}" stroke="var(--moss-deep)" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    const soilBump = `<ellipse cx="${baseX}" cy="${baseY+2}" rx="9" ry="2.6" fill="rgba(0,0,0,0.25)"/>`;
+    const flower = flowerMarkup(flowerType, topX, topY - 1, c.light, c.dark);
+
+    const swayDelay = (rng() * 3).toFixed(2);
+    return {
+      html: `<svg viewBox="0 0 60 140" xmlns="http://www.w3.org/2000/svg">
+        <g class="sway" style="animation-delay:${swayDelay}s">
+          ${soilBump}${stem}${leaves}${flower}
+        </g>
+      </svg>`
+    };
+  }
+
+  // ---------- storage ----------
+async function loadData() {
+  try {
+    const savedData = localStorage.getItem("garden-data");
+
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      entries = parsed.entries || {};
+    } else {
+      entries = {};
+    }
+  } catch (e) {
+    console.error("Could not load data", e);
+    entries = {};
+  }
+}
+
+async function saveData() {
+  try {
+    localStorage.setItem(
+      "garden-data",
+      JSON.stringify({ entries })
+    );
+  } catch (e) {
+    console.error("Could not save data", e);
+  }
+}
+
+  // ---------- streak ----------
+  function calcStreak(){
+    let d = new Date();
+    let key = keyFromDate(d);
+    if(!entries[key]){
+      d.setDate(d.getDate() - 1);
+      key = keyFromDate(d);
+      if(!entries[key]) return 0;
+    }
+    let count = 0;
+    while(entries[key]){
+      count++;
+      d.setDate(d.getDate() - 1);
+      key = keyFromDate(d);
+    }
+    return count;
+  }
+
+  // ---------- rendering ----------
+  const gardenScroll = document.getElementById('gardenScroll');
+  const journalList = document.getElementById('journalList');
+  const streakNum = document.getElementById('streakNum');
+  const butterfly = document.getElementById('butterfly');
+  const detailPanel = document.getElementById('detailPanel');
+  const dpDate = document.getElementById('dpDate');
+  const dpText = document.getElementById('dpText');
+
+  function renderFireflies(){
+    const container = document.getElementById('fireflies');
+    container.innerHTML = '';
+    const positions = [ [8,20],[22,55],[38,15],[55,60],[70,25],[85,50] ];
+    positions.forEach((p,i)=>{
+      const f = document.createElement('div');
+      f.className = 'firefly';
+      f.style.left = p[0] + '%';
+      f.style.top = p[1] + '%';
+      f.style.animationDelay = (i * 0.7) + 's';
+      container.appendChild(f);
+    });
+  }
+
+  function renderGarden(newlyPlantedKey){
+    const keys = Object.keys(entries).sort();
+    gardenScroll.innerHTML = '';
+
+    if(keys.length === 0){
+      gardenScroll.innerHTML = `<div class="empty-garden">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 22V13M12 13C12 13 6 13 6 7C6 7 12 7 12 13ZM12 13C12 13 18 13 18 7C18 7 12 7 12 13Z" stroke="#F3ECD9" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div>Your garden is waiting for its first seed. Write today's gratitude above to plant it.</div>
+      </div>`;
+      return;
+    }
+
+    const today = todayKey();
+    keys.forEach(key=>{
+      const entry = entries[key];
+      const { html } = buildPlantSVG(key, entry.text);
+      const slot = document.createElement('button');
+      slot.className = 'plant-slot';
+      if(key === today) slot.classList.add('today');
+      if(key === newlyPlantedKey) slot.classList.add('grow-in');
+      if(key === selectedDate) slot.classList.add('selected');
+      slot.setAttribute('aria-label', `Gratitude entry for ${formatLong(key)}`);
+      slot.innerHTML = `${html}<span class="day-label">${formatShort(key)}</span>`;
+      slot.addEventListener('click', ()=> showDetail(key));
+      gardenScroll.appendChild(slot);
+    });
+
+    requestAnimationFrame(()=>{ gardenScroll.scrollLeft = gardenScroll.scrollWidth; });
+  }
+
+ function renderJournal(searchText = ""){
+    const keys = Object.keys(entries)
+        .sort()
+        .reverse()
+        .filter(key =>
+            entries[key].text.toLowerCase().includes(searchText.toLowerCase())
+        );
+
+    journalList.innerHTML = '';
+
+    if(keys.length === 0){
+        journalList.innerHTML =
+        `<div class="journal-empty">
+            No matching entries found.
+        </div>`;
+        return;
+    }
+
+    keys.forEach(key=>{
+        const item = document.createElement('button');
+        item.className = 'journal-item';
+
+        item.innerHTML =
+        `<span class="j-date">${formatShort(key)}</span>
+         <span class="j-text">${escapeHtml(entries[key].text)}</span>`;
+
+        item.addEventListener('click', ()=> showDetail(key));
+
+        journalList.appendChild(item);
+    });
+}
+
+  function renderStreak(){
+    const s = calcStreak();
+    streakNum.textContent = s;
+    butterfly.style.display = s >= 7 ? 'inline-block' : 'none';
+  }
+
+  function showDetail(key){
+    selectedDate = key;
+    dpDate.textContent = formatLong(key);
+    dpText.textContent = entries[key].text;
+    detailPanel.classList.add('show');
+    document.querySelectorAll('.plant-slot').forEach(s=>s.classList.remove('selected'));
+    renderGarden();
+    detailPanel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  document.getElementById('dpClose').addEventListener('click', ()=>{
+    detailPanel.classList.remove('show');
+    selectedDate = null;
+    renderGarden();
+  });
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---------- entry form ----------
+  const entryInput = document.getElementById('entryInput');
+  const charCount = document.getElementById('charCount');
+  const plantBtn = document.getElementById('plantBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const plantBtnLabel = document.getElementById('plantBtnLabel');
+  const dateLabel = document.getElementById('dateLabel');
+  const toast = document.getElementById('toast');
+
+  function refreshFormState(){
+    const key = todayKey();
+    dateLabel.textContent = formatLong(key);
+    const existing = entries[key];
+    if(existing){
+      entryInput.value = existing.text;
+      plantBtnLabel.textContent = "Update today's entry";
+    }else{
+      entryInput.value = '';
+      plantBtnLabel.textContent = "Plant today's seed";
+    }
+    charCount.textContent = entryInput.value.length;
+    plantBtn.disabled = entryInput.value.trim().length === 0;
+  }
+
+  entryInput.addEventListener('input', ()=>{
+    charCount.textContent = entryInput.value.length;
+    plantBtn.disabled = entryInput.value.trim().length === 0;
+  });
+
+  plantBtn.addEventListener('click', async ()=>{
+    const text = entryInput.value.trim();
+    if(!text) return;
+    const key = todayKey();
+    const isNew = !entries[key];
+    entries[key] = { text, createdAt: entries[key]?.createdAt || new Date().toISOString() };
+    plantBtn.disabled = true;
+    await saveData();
+    refreshFormState();
+    renderGarden(isNew ? key : null);
+    renderJournal();
+    renderStreak();
+    toast.textContent = isNew ? 'Planted for today' : 'Entry updated';
+    toast.classList.add('show');
+    setTimeout(()=> toast.classList.remove('show'), 2200);
+  });
+
+  exportBtn.addEventListener("click", () => {
+
+    let content = "🌱 Gratitude Garden Journal\n\n";
+
+    const keys = Object.keys(entries).sort();
+
+    if(keys.length === 0){
+        alert("No journal entries to export.");
+        return;
+    }
+
+    keys.forEach(key => {
+
+        content += formatLong(key) + "\n";
+        content += "-----------------------------\n";
+        content += entries[key].text + "\n\n";
+
+    });
+
+    const blob = new Blob([content], { type: "text/plain" });
+
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+
+    link.download = "gratitude-journal.txt";
+
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+
+});
+
+function updateTheme() {
+
+    const hour = new Date().getHours();
+
+    if (hour >= 6 && hour < 12) {
+
+        // Morning
+        document.body.style.background =
+            "linear-gradient(180deg,#dff6ff 0%,#b9e6b5 100%)";
+
+        document.body.style.color = "#1b2d1b";
+
+    }
+
+    else if (hour >= 12 && hour < 17) {
+
+        // Afternoon
+        document.body.style.background =
+            "linear-gradient(180deg,#173823 0%,#294b31 100%)";
+
+        document.body.style.color = "#F3ECD9";
+
+    }
+
+    else if (hour >= 17 && hour < 19) {
+
+        // Evening
+        document.body.style.background =
+            "linear-gradient(180deg,#ffb26b 0%,#5f3b28 100%)";
+
+        document.body.style.color = "#F3ECD9";
+
+    }
+
+    else {
+
+        // Night
+        document.body.style.background =
+            "linear-gradient(180deg,#08121d 0%,#16241c 100%)";
+
+        document.body.style.color = "#F3ECD9";
+
+    }
+
+}
+
+  // ---------- init ----------
+  async function init(){
+
+    updateTheme();
+    
+    renderFireflies();
+    await loadData();
+    refreshFormState();
+    renderGarden();
+    renderJournal();
+    renderStreak();
+  }
+  const searchInput = document.getElementById("searchInput");
+
+searchInput.addEventListener("input", () => {
+    renderJournal(searchInput.value);
+});
+  init();
+})();
+</script>
+</body>
+</html>
