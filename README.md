@@ -55,7 +55,7 @@ No installation or dependencies are required.
 
 ## 📸 Preview
 
-*(Screenshot coming soon)*
+![Gratitude Garden](assets/screenshot.png)
 
 ---
 
